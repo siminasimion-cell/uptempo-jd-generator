@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Uptempo · JD Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--dp:#1E0A3C;--v:#5B2EFF;--lime:#C8F135;--lav:#EDE9FF;--lavm:#C8BDFF;--g50:#F8F7FC;--g200:#E0DCF0;--tm:#6B6290;--br:rgba(91,46,255,0.15);--r:10px;--rl:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--g50);color:var(--dp);min-height:100vh}
+nav{background:var(--dp);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+.logo{font-size:12px;font-weight:600;color:var(--lime);letter-spacing:.12em;border:1.5px solid var(--lime);padding:3px 8px;border-radius:4px}
+.nav-r{font-size:12px;color:var(--lime);background:rgba(200,241,53,.12);padding:3px 10px;border-radius:20px;border:1px solid rgba(200,241,53,.25)}
+.page{max-width:760px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+h1{font-size:24px;font-weight:600;margin-bottom:6px}
+.sub{font-size:14px;color:var(--tm);margin-bottom:2rem}
+.apibanner{background:var(--lav);border:1px solid var(--lavm);border-radius:var(--r);padding:14px 18px;margin-bottom:1.25rem;display:flex;gap:12px}
+.apibanner label{font-size:12px;font-weight:600;color:var(--dp);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px}
+.apibanner input{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--lavm);border-radius:8px;background:#fff;outline:none;font-family:monospace}
+.apibanner input:focus{border-color:var(--v)}
+.hint{font-size:11px;color:var(--tm);margin-top:4px}
+.card{background:#fff;border:1px solid var(--br);border-radius:var(--rl);padding:1.5rem;margin-bottom:1rem}
+.ch{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
+.sn{width:26px;height:26px;background:var(--dp);color:var(--lime);border-radius:50%;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ch h2{font-size:15px;font-weight:600}
+.field{margin-bottom:1rem}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.field input,.field textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--dp);background:var(--g50);border:1px solid var(--br);border-radius:var(--r);padding:9px 12px;outline:none;resize:vertical}
+.field input:focus,.field textarea:focus{border-color:var(--v);background:#fff}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sl{font-size:11px;font-weight:600;color:var(--v);text-transform:uppercase;letter-spacing:.08em;padding:10px 0 6px;border-top:1px solid var(--br);margin-top:12px}
+.sl:first-child{border-top:none;margin-top:0;padding-top:0}
+.li{display:flex;gap:7px;margin-bottom:6px;align-items:center}
+.li input{flex:1;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--dp);background:var(--g50);border:1px solid var(--br);border-radius:8px;padding:7px 10px;outline:none}
+.li input:focus{border-color:var(--v);background:#fff}
+.rm{width:28px;height:28px;border:1px solid var(--br);border-radius:8px;background:#fff;color:var(--tm);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rm:hover{border-color:#e05;color:#e05}
+.addbtn{font-size:13px;color:var(--v);background:none;border:1px dashed var(--lavm);border-radius:8px;cursor:pointer;padding:6px 12px;margin-top:6px;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif}
+.addbtn:hover{border-color:var(--v);background:var(--lav)}
+.genbtn{width:100%;padding:14px;background:var(--dp);color:var(--lime);border:none;border-radius:var(--rl);font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;cursor:pointer;margin-top:1.75rem;display:flex;align-items:center;justify-content:center;gap:10px}
+.genbtn:hover:not(:disabled){background:#2d1260}
+.genbtn:disabled{opacity:.45;cursor:not-allowed}
+.status{margin-top:1rem;padding:14px 18px;border-radius:var(--r);font-size:14px;display:none;line-height:1.6}
+.status.show{display:block}
+.loading{background:var(--lav);border:1px solid var(--lavm);color:var(--dp)}
+.error{background:#fff0f3;border:1px solid #ffc0cb;color:#8b0020}
+.success{background:#f0fce8;border:1px solid #b8e89a;color:#2a6010}
+.dlbox{margin-top:1rem;padding:1.25rem 1.5rem;background:#fff;border:1px solid #b8e89a;border-radius:var(--rl);display:none}
+.dlbox.show{display:block}
+.dlbox h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.dlbox p{font-size:13px;color:var(--tm);margin-bottom:12px}
+.dlbtn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:var(--v);color:#fff;border-radius:var(--r);font-size:14px;font-weight:500;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.dlbtn:hover{opacity:.85}
+.spin{width:16px;height:16px;border:2.5px solid rgba(200,241,53,.3);border-top-color:var(--lime);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;font-size:12px;color:var(--tm);margin-top:3rem;padding-top:1.5rem;border-top:1px solid var(--br)}
+</style>
+</head>
+<body>
+<nav>
+  <div style="display:flex;align-items:center;gap:10px"><span class="logo">UPTEMPO</span><span style="color:rgba(255,255,255,.5);font-size:13px">People Ops</span></div>
+  <span class="nav-r">JD Generator</span>
+</nav>
+<div class="page">
+  <h1>Job Description Generator</h1>
+  <p class="sub">Fill in the role details — AI drafts a full, on-brand JD and exports it as a Word document.</p>
+
+  <div class="apibanner">
+    <div style="flex:1">
+      <label for="apiKey">Anthropic API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-..."/>
+      <div class="hint">Get your key at console.anthropic.com → API Keys. Never stored anywhere.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="sn">1</div><h2>Role basics</h2></div>
+    <div class="field"><label>Job title *</label><input type="text" id="roleTitle" placeholder="e.g. Senior Product Manager"/></div>
+    <div class="row2">
+      <div class="field"><label>Primary location</label><input type="text" id="loc1" placeholder="AMERICAS TIMEZONE (Remote)"/></div>
+      <div class="field"><label>Secondary location</label><input type="text" id="loc2" placeholder="Denver, CO (Hybrid)"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Department</label><input type="text" id="dept" placeholder="Engineering, People…"/></div>
+      <div class="field"><label>Reports to</label><input type="text" id="reportsTo" placeholder="CTO, CHRO…"/></div>
+    </div>
+    <div class="field"><label>Experience level</label><input type="text" id="yearsExp" placeholder="e.g. 5–8 years, senior IC"/></div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="sn">2</div><h2>Role context</h2></div>
+    <div class="field">
+      <label>Why are we hiring for this now? *</label>
+      <textarea id="context" rows="4" placeholder="What problem does this role solve? What gap does it fill? What does success look like in year one?"></textarea>
+      <div class="hint">2–4 sentences. This shapes the entire JD.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="sn">3</div><h2>What they'll own</h2></div>
+    <div class="hint" style="font-size:13px;color:var(--tm);margin-bottom:10px">Leave blank and AI will generate from your context.</div>
+    <div id="respList"></div>
+    <button class="addbtn" onclick="addItem('respList','e.g. Own the full-cycle recruiting process')">+ Add ownership area</button>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="sn">4</div><h2>Requirements</h2></div>
+    <div class="sl">Must-haves</div>
+    <div id="mustList"></div>
+    <button class="addbtn" onclick="addItem('mustList','e.g. 5+ years in B2B SaaS')">+ Add must-have</button>
+    <div class="sl">Nice-to-haves</div>
+    <div id="niceList"></div>
+    <button class="addbtn" onclick="addItem('niceList','e.g. Familiarity with Salesforce')">+ Add nice-to-have</button>
+  </div>
+
+  <div class="card">
+    <div class="ch"><div class="sn">5</div><h2>Optional extras</h2></div>
+    <div class="field"><label>Compensation range</label><input type="text" id="comp" placeholder="e.g. $120,000–$155,000 base + equity — leave blank to omit"/></div>
+    <div class="field"><label>Anything else for the AI?</label><textarea id="extra" rows="3" placeholder="New function, bilingual requirement, key tools, travel %…"></textarea></div>
+  </div>
+
+  <button class="genbtn" id="genBtn" onclick="generate()">
+    <span class="spin" id="spinner" style="display:none"></span>
+    <span id="btnTxt">Generate JD + Download .docx</span>
+  </button>
+
+  <div class="status" id="statusBox"></div>
+  <div class="dlbox" id="dlBox">
+    <h3>✓ Your JD is ready</h3>
+    <p id="dlDesc"></p>
+    <button class="dlbtn" id="dlBtn">⬇ Download .docx</button>
+  </div>
+
+  <footer>Built for Uptempo People Ops · Powered by Claude · Content stays in your browser</footer>
+</div>
+
+<script>
+function addItem(id, ph) {
+  var d = document.createElement('div');
+  d.className = 'li';
+  d.innerHTML = '<input type="text" placeholder="' + ph + '"/><button class="rm" onclick="this.parentElement.remove()">×</button>';
+  document.getElementById(id).appendChild(d);
+  d.querySelector('input').focus();
+}
+
+function getList(id) {
+  return Array.from(document.getElementById(id).querySelectorAll('input'))
+    .map(function(i){return i.value.trim();}).filter(Boolean);
+}
+
+function setStatus(type, msg) {
+  var b = document.getElementById('statusBox');
+  b.className = 'status show ' + type;
+  b.innerHTML = msg;
+}
+
+function setBusy(busy) {
+  document.getElementById('genBtn').disabled = busy;
+  document.getElementById('spinner').style.display = busy ? 'inline-block' : 'none';
+  document.getElementById('btnTxt').textContent = busy ? 'Generating…' : 'Generate JD + Download .docx';
+}
+
+// Build DOCX from scratch using JSZip
+function buildDocx(jd) {
+  var dp = '1E0A3C', vi = '5B2EFF';
+
+  function esc(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function para(text, opts) {
+    opts = opts || {};
+    var sz = opts.sz || 22;
+    var bold = opts.bold ? '<w:b/>' : '';
+    var color = opts.color ? '<w:color w:val="' + opts.color + '"/>' : '';
+    var before = opts.before || 80;
+    var after = opts.after || 80;
+    var indent = opts.indent ? '<w:ind w:left="720" w:hanging="360"/>' : '';
+    var num = opts.num ? '<w:numPr><w:ilvl w:val="0"/><w:numId w:val="' + opts.num + '"/></w:numPr>' : '';
+    var border = opts.border ? '<w:pBdr><w:bottom w:val="single" w:sz="12" w:space="1" w:color="' + vi + '"/></w:pBdr>' : '';
+    return '<w:p><w:pPr>' + num + border + '<w:spacing w:before="' + before + '" w:after="' + after + '"/>' + indent + '</w:pPr>' +
+      '<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="' + sz + '"/>' + bold + color + '</w:rPr>' +
+      '<w:t xml:space="preserve">' + esc(text) + '</w:t></w:r></w:p>';
+  }
+
+  function heading(text) {
+    return '<w:p><w:pPr><w:spacing w:before="360" w:after="120"/></w:pPr>' +
+      '<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="28"/><w:b/><w:color w:val="' + dp + '"/></w:rPr>' +
+      '<w:t>' + esc(text) + '</w:t></w:r></w:p>';
+  }
+
+  var body = '';
+
+  // Title
+  body += para(jd.roleTitle, {sz:44, bold:true, color:dp, before:0, after:100});
+
+  // Location
+  var locs = [jd.locationPrimary, jd.locationSecondary].filter(Boolean).join('   |   ');
+  if (locs) body += para(locs, {sz:22, color:'666666', before:0, after:240});
+
+  // Divider line
+  body += para('', {border:true, before:0, after:320});
+
+  // About
+  body += heading('About Uptempo');
+  body += para("Marketing teams at some of the world's biggest companies use Uptempo to plan, manage, and measure their spend, bringing clarity to one of the most complex, high-stakes functions in the business. We're at an exciting inflection point: AI is reshaping how marketers work, and we're building the tools that help them move faster and make smarter decisions.", {before:80, after:80});
+  body += para("We're a remote-friendly team that cares deeply about doing good work, treating each other well, and building something that actually matters to our customers.", {before:80, after:80});
+
+  // The Role
+  body += heading('The Role');
+  body += para(jd.roleIntro, {before:80, after:80});
+
+  // Responsibilities
+  if (jd.responsibilities && jd.responsibilities.length) {
+    body += heading("What You'll Own");
+    jd.responsibilities.forEach(function(r) {
+      body += para(r, {num:1, indent:true, before:60, after:60});
+    });
+  }
+
+  // Requirements
+  body += heading("What We're Looking For");
+  if (jd.mustHaves && jd.mustHaves.length) {
+    body += para('Must-haves:', {bold:true, before:120, after:60});
+    jd.mustHaves.forEach(function(r) { body += para(r, {num:2, indent:true, before:60, after:60}); });
+  }
+  if (jd.niceToHaves && jd.niceToHaves.length) {
+    body += para('Nice-to-haves:', {bold:true, before:160, after:60});
+    jd.niceToHaves.forEach(function(r) { body += para(r, {num:2, indent:true, before:60, after:60}); });
+  }
+
+  // Who You Are
+  if (jd.whoYouAre) {
+    body += heading('Who You Are');
+    jd.whoYouAre.split('\n').filter(Boolean).forEach(function(p) { body += para(p, {before:80, after:80}); });
+  }
+
+  // Comp
+  if (jd.compensation) {
+    body += heading('Compensation & Benefits');
+    body += para(jd.compensation, {before:80, after:80});
+  }
+
+  var documentXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" ' +
+    'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ' +
+    'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">' +
+    '<w:body>' + body +
+    '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/>' +
+    '<w:pgMar w:top="1080" w:right="1260" w:bottom="1080" w:left="1260"/></w:sectPr>' +
+    '</w:body></w:document>';
+
+  var numberingXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>' +
+    '<w:abstractNum w:abstractNumId="1"><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="&#x2022;"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>' +
+    '<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>' +
+    '<w:num w:numId="2"><w:abstractNumId w:val="1"/></w:num>' +
+    '</w:numbering>';
+
+  var relsXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+    '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>' +
+    '</Relationships>';
+
+  var stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+    '<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/><w:sz w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults>' +
+    '</w:styles>';
+
+  var appRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+    '</Relationships>';
+
+  var contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+    '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>' +
+    '<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>' +
+    '</Types>';
+
+  var zip = new JSZip();
+  zip.file('[Content_Types].xml', contentTypes);
+  zip.file('_rels/.rels', appRels);
+  zip.file('word/document.xml', documentXml);
+  zip.file('word/_rels/document.xml.rels', relsXml);
+  zip.file('word/styles.xml', stylesXml);
+  zip.file('word/numbering.xml', numberingXml);
+
+  return zip.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+
+async function generate() {
+  var apiKey = document.getElementById('apiKey').value.trim();
+  var roleTitle = document.getElementById('roleTitle').value.trim();
+  var context = document.getElementById('context').value.trim();
+
+  if (!apiKey) { setStatus('error', 'Please enter your Anthropic API key.'); return; }
+  if (!roleTitle) { setStatus('error', 'Please enter a job title.'); return; }
+  if (!context) { setStatus('error', 'Please add role context.'); return; }
+
+  setBusy(true);
+  document.getElementById('dlBox').className = 'dlbox';
+  setStatus('loading', 'Step 1 of 2: Drafting JD with AI...');
+
+  var payload = {
+    roleTitle: roleTitle,
+    dept: document.getElementById('dept').value.trim(),
+    reportsTo: document.getElementById('reportsTo').value.trim(),
+    loc1: document.getElementById('loc1').value.trim(),
+    loc2: document.getElementById('loc2').value.trim(),
+    yearsExp: document.getElementById('yearsExp').value.trim(),
+    context: context,
+    responsibilities: getList('respList'),
+    mustHaves: getList('mustList'),
+    niceToHaves: getList('niceList'),
+    comp: document.getElementById('comp').value.trim(),
+    extra: document.getElementById('extra').value.trim()
+  };
+
+  var userMsg = 'Generate a JD for Uptempo.\n\nRole: ' + payload.roleTitle +
+    '\nDept: ' + (payload.dept||'not specified') +
+    ' | Reports to: ' + (payload.reportsTo||'not specified') +
+    '\nLocation: ' + ([payload.loc1, payload.loc2].filter(Boolean).join(' / ')||'not specified') +
+    '\nExperience: ' + (payload.yearsExp||'not specified') +
+    '\n\nContext:\n' + payload.context +
+    '\n\n' + (payload.responsibilities.length ? 'Ownership areas:\n' + payload.responsibilities.join('\n') : 'Generate 5 ownership areas.') +
+    '\n\n' + (payload.mustHaves.length ? 'Must-haves:\n' + payload.mustHaves.join('\n') : 'Generate 5 must-haves.') +
+    '\n\n' + (payload.niceToHaves.length ? 'Nice-to-haves:\n' + payload.niceToHaves.join('\n') : '') +
+    '\n' + (payload.comp ? 'Comp: ' + payload.comp : '') +
+    '\n' + (payload.extra ? 'Extra: ' + payload.extra : '') +
+    '\n\nReturn ONLY valid JSON with keys: roleTitle, locationPrimary, locationSecondary, roleIntro, responsibilities (array), mustHaves (array), niceToHaves (array), whoYouAre, compensation (or null). No markdown, no explanation.';
+
+  var jd;
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{role:'user', content: userMsg}]
+      })
+    });
+
+    if (!resp.ok) {
+      var e = {};
+      try { e = await resp.json(); } catch(x){}
+      var msg = (e.error && e.error.message) || ('API error ' + resp.status);
+      if (resp.status === 401) msg = 'Invalid API key. Check console.anthropic.com/settings/api-keys.';
+      if (resp.status === 403) msg = 'Access denied. Add billing credits at console.anthropic.com/settings/billing.';
+      throw new Error(msg);
+    }
+
+    var data = await resp.json();
+    var raw = data.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    raw = raw.replace(/```json/g,'').replace(/```/g,'').trim();
+    jd = JSON.parse(raw);
+    jd.locationPrimary = jd.locationPrimary || payload.loc1;
+    jd.locationSecondary = jd.locationSecondary || payload.loc2;
+
+  } catch(e) {
+    setStatus('error', '<strong>Error:</strong> ' + e.message);
+    setBusy(false);
+    return;
+  }
+
+  setStatus('loading', 'Step 2 of 2: Building Word document...');
+
+  try {
+    var blob = await buildDocx(jd);
+    var fname = 'JD_' + jd.roleTitle.replace(/[^a-zA-Z0-9]+/g,'_') + '.docx';
+    var url = URL.createObjectURL(blob);
+    document.getElementById('dlBtn').onclick = function() {
+      var a = document.createElement('a');
+      a.href = url; a.download = fname; a.click();
+    };
+    document.getElementById('dlDesc').textContent = '"' + jd.roleTitle + '" — click below to download.';
+    document.getElementById('dlBox').className = 'dlbox show';
+    setStatus('success', '✓ Done! Your JD is ready.');
+  } catch(e) {
+    setStatus('error', 'Document build failed: ' + e.message);
+  }
+
+  setBusy(false);
+}
+</script>
+</body>
+</html>
