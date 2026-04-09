@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Uptempo · JD Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --deep-purple: #1E0A3C;
+    --violet: #5B2EFF;
+    --violet-light: #7B5FFF;
+    --lavender: #EDE9FF;
+    --lavender-mid: #C8BDFF;
+    --lime: #C8F135;
+    --lime-dark: #9EC220;
+    --white: #FFFFFF;
+    --gray-50: #F8F7FC;
+    --gray-100: #F0EEF8;
+    --gray-200: #E0DCF0;
+    --gray-400: #9E97B8;
+    --gray-600: #5C5580;
+    --gray-800: #2D2550;
+    --text: #1E0A3C;
+    --text-muted: #6B6290;
+    --border: rgba(91,46,255,0.15);
+    --border-strong: rgba(91,46,255,0.3);
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: var(--gray-50);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--deep-purple);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; }
+  .nav-logo {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--lime);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--lime);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .nav-title { color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 400; }
+  .nav-badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(200,241,53,0.15);
+    color: var(--lime);
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(200,241,53,0.3);
+    letter-spacing: 0.04em;
+  }
+
+  /* LAYOUT */
+  .page { max-width: 780px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .page-header { margin-bottom: 2rem; }
+  .page-header h1 { font-size: 26px; font-weight: 600; color: var(--deep-purple); margin-bottom: 6px; }
+  .page-header p { font-size: 14px; color: var(--text-muted); }
+
+  /* API KEY BANNER */
+  .api-banner {
+    background: var(--lavender);
+    border: 1px solid var(--lavender-mid);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .api-banner-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .api-banner label { display: block; font-size: 13px; font-weight: 600; color: var(--deep-purple); margin-bottom: 6px; }
+  .api-banner input {
+    width: 100%;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: white;
+    color: var(--deep-purple);
+    outline: none;
+  }
+  .api-banner input:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(91,46,255,0.1); }
+  .api-banner .hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+  /* CARDS */
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.15s;
+  }
+  .card:focus-within { border-color: var(--border-strong); }
+
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; }
+  .step-num {
+    width: 26px; height: 26px;
+    background: var(--deep-purple);
+    color: var(--lime);
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-header h2 { font-size: 15px; font-weight: 600; color: var(--deep-purple); }
+
+  /* FIELDS */
+  .field { margin-bottom: 1rem; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 5px;
+  }
+  .field input[type=text],
+  .field textarea,
+  .field select {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--gray-50);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    resize: vertical;
+  }
+  .field input:focus,
+  .field textarea:focus { border-color: var(--violet); background: white; box-shadow: 0 0 0 3px rgba(91,46,255,0.08); }
+  .field .hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+
+  /* LIST ITEMS */
+  .sub-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--violet);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 0 6px;
+    border-top: 1px solid var(--border);
+    margin-top: 12px;
+  }
+  .sub-label:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+
+  .list-area { }
+  .list-item { display: flex; gap: 7px; margin-bottom: 6px; align-items: center; }
+  .list-item input {
+    flex: 1;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--gray-50);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    outline: none;
+  }
+  .list-item input:focus { border-color: var(--violet); background: white; }
+  .rm-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.12s;
+  }
+  .rm-btn:hover { border-color: #e05; color: #e05; background: #fff0f3; }
+  .add-btn {
+    font-size: 13px;
+    color: var(--violet);
+    background: none;
+    border: 1px dashed var(--lavender-mid);
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 6px 12px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.12s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .add-btn:hover { border-color: var(--violet); background: var(--lavender); }
+
+  /* GENERATE BUTTON */
+  .gen-wrap { margin-top: 1.75rem; }
+  .gen-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--deep-purple);
+    color: var(--lime);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .gen-btn:hover:not(:disabled) { background: #2d1260; transform: translateY(-1px); }
+  .gen-btn:active:not(:disabled) { transform: translateY(0); }
+  .gen-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* STATUS */
+  .status {
+    margin-top: 1rem;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    display: none;
+    line-height: 1.6;
+  }
+  .status.show { display: block; }
+  .status.loading { background: var(--lavender); border: 1px solid var(--lavender-mid); color: var(--deep-purple); }
+  .status.error { background: #fff0f3; border: 1px solid #ffc0cb; color: #8b0020; }
+  .status.success { background: #f0fce8; border: 1px solid #b8e89a; color: #2a6010; }
+
+  /* DOWNLOAD */
+  .dl-section { margin-top: 1rem; padding: 1.25rem 1.5rem; background: white; border: 1px solid #b8e89a; border-radius: var(--radius-lg); display: none; }
+  .dl-section.show { display: block; }
+  .dl-section h3 { font-size: 14px; font-weight: 600; color: var(--deep-purple); margin-bottom: 4px; }
+  .dl-section p { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+  .dl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--violet);
+    color: white;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .dl-btn:hover { background: var(--violet-light); }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2.5px solid rgba(200,241,53,0.3);
+    border-top-color: var(--lime);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .progress-steps {
+    display: flex;
+    gap: 8px;
+    flex-direction: column;
+  }
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .step-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--lavender-mid);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+  .step-dot.active { border-color: var(--violet); background: var(--lavender); }
+  .step-dot.done { border-color: #4caf50; background: #e8f5e9; color: #2a6010; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <span class="nav-logo">Uptempo</span>
+    <span class="nav-title">People Ops</span>
+  </div>
+  <span class="nav-badge">JD Generator</span>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>Job Description Generator</h1>
+    <p>Fill in the role details — AI drafts a full, on-brand JD and exports it as a Word document ready to share.</p>
+  </div>
+
+  <!-- API KEY -->
+  <div class="api-banner">
+    <div class="api-banner-icon">🔑</div>
+    <div style="flex:1">
+      <label for="apiKey">Anthropic API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-api03-..." autocomplete="off" />
+      <div class="hint">Your key is never stored or sent anywhere except directly to Anthropic's API. Get one at console.anthropic.com.</div>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">1</div>
+      <h2>Role basics</h2>
+    </div>
+    <div class="field">
+      <label>Job title *</label>
+      <input type="text" id="roleTitle" placeholder="e.g. Senior Product Manager, Head of Revenue Operations" />
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Primary location / timezone</label>
+        <input type="text" id="loc1" placeholder="AMERICAS TIMEZONE (Remote)" />
+      </div>
+      <div class="field">
+        <label>Secondary location</label>
+        <input type="text" id="loc2" placeholder="Denver, CO (Hybrid)" />
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Department</label>
+        <input type="text" id="dept" placeholder="Engineering, People, Finance…" />
+      </div>
+      <div class="field">
+        <label>Reports to</label>
+        <input type="text" id="reportsTo" placeholder="CTO, CHRO, VP of Sales…" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Experience level</label>
+      <input type="text" id="yearsExp" placeholder="e.g. 5–8 years, senior IC, player-coach" />
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">2</div>
+      <h2>Role context</h2>
+    </div>
+    <div class="field">
+      <label>Why are we hiring for this now? *</label>
+      <textarea id="context" rows="4" placeholder="What problem does this role solve? What gap does it fill? What's the business moment — scaling, new function, backfill? What does success look like in year one?"></textarea>
+      <div class="hint">Be specific. This shapes the entire "The Role" section. 2–4 sentences is enough.</div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">3</div>
+      <h2>What they'll own</h2>
+    </div>
+    <div class="hint" style="font-size:13px; color:var(--text-muted); margin-bottom:10px;">Key ownership areas — these become the numbered list under "What You'll Own". Leave blank and AI will generate them from your context.</div>
+    <div class="list-area" id="respList"></div>
+    <button class="add-btn" onclick="addItem('respList', 'e.g. Own the full-cycle recruiting process for technical and GTM roles')">+ Add ownership area</button>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">4</div>
+      <h2>Requirements</h2>
+    </div>
+    <div class="sub-label">Must-haves</div>
+    <div class="list-area" id="mustList"></div>
+    <button class="add-btn" onclick="addItem('mustList', 'e.g. 5+ years in B2B SaaS, deep IAM expertise…')">+ Add must-have</button>
+
+    <div class="sub-label">Nice-to-haves</div>
+    <div class="list-area" id="niceList"></div>
+    <button class="add-btn" onclick="addItem('niceList', 'e.g. Familiarity with Salesforce CPQ')">+ Add nice-to-have</button>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-num">5</div>
+      <h2>Optional extras</h2>
+    </div>
+    <div class="field">
+      <label>Compensation range</label>
+      <input type="text" id="comp" placeholder="e.g. $120,000–$155,000 base + equity + benefits — leave blank to omit" />
+    </div>
+    <div class="field">
+      <label>Anything else for the AI to know?</label>
+      <textarea id="extra" rows="3" placeholder="New function, bilingual requirement, travel %, will build a team, key tools they'll use…"></textarea>
+    </div>
+  </div>
+
+  <div class="gen-wrap">
+    <button class="gen-btn" id="genBtn" onclick="generate()">
+      <span class="spinner" id="spinner" style="display:none"></span>
+      <span id="genBtnText">Generate JD + Download .docx</span>
+    </button>
+  </div>
+
+  <div class="status" id="statusBox">
+    <div class="progress-steps" id="progressSteps"></div>
+  </div>
+
+  <div class="dl-section" id="dlSection">
+    <h3>✓ Your JD is ready</h3>
+    <p id="dlDesc">Word document generated successfully.</p>
+    <button class="dl-btn" id="dlBtn">
+      ⬇ Download .docx
+    </button>
+  </div>
+
+  <footer>
+    Built for Uptempo People Ops · Powered by Claude · Content stays in your browser
+  </footer>
+</div>
+
+<!-- docx.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+
+<script>
+function addItem(listId, placeholder) {
+  const container = document.getElementById(listId);
+  const div = document.createElement('div');
+  div.className = 'list-item';
+  div.innerHTML = `<input type="text" placeholder="${placeholder}" /><button class="rm-btn" onclick="this.parentElement.remove()" title="Remove">×</button>`;
+  container.appendChild(div);
+  div.querySelector('input').focus();
+}
+
+function getList(id) {
+  return Array.from(document.getElementById(id).querySelectorAll('input'))
+    .map(i => i.value.trim()).filter(Boolean);
+}
+
+function setProgress(steps, currentIndex) {
+  const el = document.getElementById('progressSteps');
+  el.innerHTML = steps.map((s, i) => {
+    const cls = i < currentIndex ? 'done' : i === currentIndex ? 'active' : '';
+    const icon = i < currentIndex ? '✓' : '';
+    return `<div class="progress-step"><div class="step-dot ${cls}">${icon}</div><span style="color:${i===currentIndex?'var(--deep-purple)':'var(--text-muted)'}">${s}</span></div>`;
+  }).join('');
+}
+
+function showStatus(type, content) {
+  const box = document.getElementById('statusBox');
+  box.className = 'status show ' + type;
+  if (typeof content === 'string') box.innerHTML = content;
+}
+
+let dlBlob = null;
+let dlFilename = 'JD.docx';
+
+
+  // --- STEP 1: AI Draft ---
+  let jd;
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    let resp;
+    try {
+      resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          system: 'You are an expert HR writer for Uptempo, a PE-backed B2B SaaS company (~$50M ARR) selling marketing spend management software. You write job descriptions that are direct, energizing, and authentic. No buzzwords, no filler. Return ONLY valid JSON with keys: roleTitle, locationPrimary, locationSecondary, roleIntro (2-4 sentences, compelling), responsibilities (4-7 items starting with strong verbs), mustHaves (4-7 specific requirements), niceToHaves (2-5 optional), whoYouAre (2 short paragraphs on mindset and collaboration), compensation (string or null). No markdown fences, no commentary.',
+          messages: [{
+            role: 'user',
+            content: 'Generate a JD for Uptempo.\n\nRole: ' + payload.roleTitle + '\nDept: ' + (payload.dept || 'not specified') + ' | Reports to: ' + (payload.reportsTo || 'not specified') + '\nLocation: ' + ([payload.locationPrimary, payload.locationSecondary].filter(Boolean).join(' / ') || 'not specified') + '\nExperience: ' + (payload.yearsExp || 'not specified') + '\n\nContext (why we are hiring):\n' + payload.context + '\n\n' + (payload.responsibilities.length ? 'Ownership areas (expand these):\n' + payload.responsibilities.map(function(r,i){return (i+1)+'. '+r;}).join('\n') : 'Generate 5 strong ownership areas from the context.') + '\n\n' + (payload.mustHaves.length ? 'Must-haves:\n' + payload.mustHaves.map(function(r){return '- '+r;}).join('\n') : 'Generate 5 must-haves.') + '\n\n' + (payload.niceToHaves.length ? 'Nice-to-haves:\n' + payload.niceToHaves.map(function(r){return '- '+r;}).join('\n') : '') + '\n' + (payload.compensation ? 'Comp: ' + payload.compensation : '') + '\n' + (payload.extra ? 'Extra context: ' + payload.extra : '') + '\n\nReturn JSON only.'
+          }]
+        })
+      });
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      if (fetchErr.name === 'AbortError') {
+        throw new Error('Request timed out after 30 seconds. If you opened this file directly from your desktop, try using Chrome, or host the file on a server first.');
+      }
+      throw new Error('Network error: ' + fetchErr.message + '. Make sure you are connected to the internet and try again.');
+    }
+    clearTimeout(timeoutId);
+
+    if (!resp.ok) {
+      var errMsg = 'API error ' + resp.status;
+      try {
+        var errData = await resp.json();
+        errMsg = errData.error && errData.error.message ? errData.error.message : errMsg;
+        if (resp.status === 401) errMsg = 'Invalid API key. Double-check you copied the full key from console.anthropic.com/settings/api-keys.';
+        if (resp.status === 403) errMsg = 'Access denied (403). Make sure billing credits are set up at console.anthropic.com/settings/billing.';
+        if (resp.status === 429) errMsg = 'Rate limit hit. Wait 30 seconds and try again.';
+        if (resp.status === 500) errMsg = 'Anthropic server error. Try again in a moment.';
+      } catch(parseErr) {}
+      throw new Error(errMsg);
+    }
+
+    var data = await resp.json();
+    var raw = data.content.filter(function(b){return b.type==='text';}).map(function(b){return b.text;}).join('');
+    var cleaned = raw.replace(/```json/g,'').replace(/```/g,'').trim();
+    jd = JSON.parse(cleaned);
+
+  } catch (e) {
+    showStatus('error', '<strong>Error:</strong> ' + e.message);
+    btn.disabled = false;
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('genBtnText').textContent = 'Generate JD + Download .docx';
+    return;
+  }
+
+
+  setProgress(steps, 1);
+
+  // --- STEP 2: Build DOCX ---
+  try {
+    const {
+      Document, Packer, Paragraph, TextRun,
+      AlignmentType, LevelFormat, HeadingLevel, BorderStyle, WidthType, ShadingType
+    } = docx;
+
+    const DEEP_PURPLE = "1E0A3C";
+    const VIOLET = "5B2EFF";
+    const LAVENDER = "EDE9FF";
+    const LIME = "C8F135";
+
+    const body = [];
+
+    // Title block
+    body.push(new Paragraph({
+      spacing: { before: 0, after: 100 },
+      children: [new TextRun({ text: jd.roleTitle, bold: true, font: "Arial", size: 48, color: DEEP_PURPLE })]
+    }));
+
+    const locs = [jd.locationPrimary, jd.locationSecondary].filter(Boolean);
+    if (locs.length) {
+      body.push(new Paragraph({
+        spacing: { before: 0, after: 320 },
+        children: [new TextRun({ text: locs.join('   |   '), font: "Arial", size: 22, color: "666666", italics: true })]
+      }));
+    }
+
+    // Divider
+    body.push(new Paragraph({
+      spacing: { before: 0, after: 360 },
+      border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: VIOLET, space: 1 } },
+      children: [new TextRun({ text: "" })]
+    }));
+
+    const H2 = (text) => new Paragraph({
+      heading: HeadingLevel.HEADING_2,
+      spacing: { before: 360, after: 120 },
+      children: [new TextRun({ text, bold: true, font: "Arial", size: 28, color: DEEP_PURPLE })]
+    });
+
+    const Body = (text) => new Paragraph({
+      spacing: { before: 80, after: 80 },
+      children: [new TextRun({ text, font: "Arial", size: 22, color: "333333" })]
+    });
+
+    const Bullet = (text) => new Paragraph({
+      numbering: { reference: "bullets", level: 0 },
+      spacing: { before: 60, after: 60 },
+      children: [new TextRun({ text, font: "Arial", size: 22, color: "333333" })]
+    });
+
+    const Numbered = (text) => new Paragraph({
+      numbering: { reference: "numbered", level: 0 },
+      spacing: { before: 80, after: 80 },
+      children: [new TextRun({ text, font: "Arial", size: 22, color: "333333" })]
+    });
+
+    const Label = (text) => new Paragraph({
+      spacing: { before: 160, after: 60 },
+      children: [new TextRun({ text, bold: true, font: "Arial", size: 22, color: "222222" })]
+    });
+
+    // About Uptempo
+    body.push(H2("About Uptempo"));
+    body.push(Body("Marketing teams at some of the world's biggest companies use Uptempo to plan, manage, and measure their spend, bringing clarity to one of the most complex, high-stakes functions in the business. We're at an exciting inflection point: AI is reshaping how marketers work, and we're building the tools that help them move faster and make smarter decisions."));
+    body.push(Body("We're a remote-friendly team that cares deeply about doing good work, treating each other well, and building something that actually matters to our customers."));
+
+    // The Role
+    body.push(H2("The Role"));
+    body.push(Body(jd.roleIntro));
+
+    // Responsibilities
+    if (jd.responsibilities?.length) {
+      body.push(H2("What You'll Own"));
+      jd.responsibilities.forEach(r => body.push(Numbered(r)));
+    }
+
+    // Requirements
+    body.push(H2("What We're Looking For"));
+    if (jd.mustHaves?.length) {
+      body.push(Label("Must-haves:"));
+      jd.mustHaves.forEach(r => body.push(Bullet(r)));
+    }
+    if (jd.niceToHaves?.length) {
+      body.push(Label("Nice-to-haves:"));
+      jd.niceToHaves.forEach(r => body.push(Bullet(r)));
+    }
+
+    // Who You Are
+    if (jd.whoYouAre) {
+      body.push(H2("Who You Are"));
+      jd.whoYouAre.split('\n').filter(Boolean).forEach(p => body.push(Body(p)));
+    }
+
+    // Compensation
+    if (jd.compensation) {
+      body.push(H2("Compensation & Benefits"));
+      body.push(Body(jd.compensation));
+    }
+
+    const doc = new Document({
+      numbering: {
+        config: [
+          {
+            reference: "bullets",
+            levels: [{ level: 0, format: LevelFormat.BULLET, text: "\u2022", alignment: AlignmentType.LEFT,
+              style: { paragraph: { indent: { left: 720, hanging: 360 } } } }]
+          },
+          {
+            reference: "numbered",
+            levels: [{ level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.LEFT,
+              style: { paragraph: { indent: { left: 720, hanging: 360 } } } }]
+          }
+        ]
+      },
+      styles: {
+        default: { document: { run: { font: "Arial", size: 22 } } },
+        paragraphStyles: [
+          { id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal",
+            run: { size: 28, bold: true, font: "Arial", color: DEEP_PURPLE },
+            paragraph: { spacing: { before: 360, after: 120 }, outlineLevel: 1 } }
+        ]
+      },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 12240, height: 15840 },
+            margin: { top: 1080, right: 1260, bottom: 1080, left: 1260 }
+          }
+        },
+        children: body
+      }]
+    });
+
+    const buf = await Packer.toBuffer(doc);
+    dlBlob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    dlFilename = `JD_${jd.roleTitle.replace(/[^a-zA-Z0-9]+/g, '_')}.docx`;
+
+  } catch (e) {
+    showStatus('error', '⚠ Document generation failed: ' + e.message);
+    btn.disabled = false;
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('genBtnText').textContent = 'Generate JD + Download .docx';
+    return;
+  }
+
+  setProgress(steps, 2);
+  showStatus('success', '✓ JD drafted and Word document built successfully.');
+
+  const dlSection = document.getElementById('dlSection');
+  dlSection.className = 'dl-section show';
+  document.getElementById('dlDesc').textContent = `"${jd.roleTitle}" — ready to download.`;
+  document.getElementById('dlBtn').onclick = () => {
+    const url = URL.createObjectURL(dlBlob);
+    const a = document.createElement('a');
+    a.href = url; a.download = dlFilename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  btn.disabled = false;
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('genBtnText').textContent = 'Generate Another JD';
+}
+</script>
+</body>
+</html>
